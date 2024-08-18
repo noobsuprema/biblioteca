@@ -55,9 +55,22 @@
         #controls {
             margin-bottom: 20px;
             display: flex;
+            flex-direction: column;
             gap: 10px;
             max-width: 600px;
             margin: 0 auto;
+        }
+        #sortSelect {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        #sortSelect:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
         }
         #sortButton {
             padding: 15px 20px;
@@ -126,9 +139,13 @@
 <body>
     <h1>Biblioteca Virtual</h1>
 
-    <!-- Controles: Botão de Ordenação -->
+    <!-- Controles: Seletor de Ordenação e Botão -->
     <div id="controls">
-        <button id="sortButton">Ordenar A-Z</button>
+        <select id="sortSelect">
+            <option value="title">Ordenar A-Z</option>
+            <option value="year">Ordenar por Ano</option>
+        </select>
+        <button id="sortButton">Aplicar Ordenação</button>
     </div>
 
     <form id="bookForm">
@@ -190,8 +207,15 @@
 
             // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
+                const sortOption = document.getElementById('sortSelect').value;
                 books = loadBooksFromLocalStorage();
-                books.sort((a, b) => a.title.localeCompare(b.title));
+                
+                if (sortOption === 'title') {
+                    books.sort((a, b) => a.title.localeCompare(b.title));
+                } else if (sortOption === 'year') {
+                    books.sort((a, b) => a.year - b.year);
+                }
+                
                 saveBooksToLocalStorage(books);
                 renderBooks(books);
             });
@@ -214,7 +238,7 @@
                 const newBook = {
                     title,
                     author,
-                    year,
+                    year: parseInt(year),
                     synopsis,
                     cover: e.target.result
                 };
@@ -224,13 +248,3 @@
                 renderBooks(books); // Re-renderiza os livros na tela
 
                 // Limpa o formulário após o cadastro
-                document.getElementById('bookForm').reset();
-            };
-
-            if (cover) {
-                reader.readAsDataURL(cover);
-            }
-        });
-    </script>
-</body>
-</html>
