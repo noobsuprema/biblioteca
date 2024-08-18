@@ -251,4 +251,10 @@
                 document.getElementById('bookForm').reset();
             };
 
-            if (cover)
+            if (cover) {
+                reader.readAsDataURL(cover);
+            }
+        });
+    </script>
+</body>
+</html>
