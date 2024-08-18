@@ -188,6 +188,7 @@
                 .then(snapshot => {
                     if (snapshot.empty) {
                         console.log('Nenhum livro encontrado.');
+                        document.getElementById('bookList').innerHTML = '<p>Nenhum livro cadastrado.</p>';
                         return;
                     }
                     const books = [];
@@ -201,11 +202,6 @@
         function renderBooks(books) {
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
-
-            if (books.length === 0) {
-                bookList.innerHTML = '<p>Nenhum livro cadastrado.</p>';
-                return;
-            }
 
             books.forEach(book => {
                 const bookDiv = document.createElement('div');
@@ -262,6 +258,7 @@
 
                 // Limpa o formulário após o cadastro
                 document.getElementById('bookForm').reset();
+                loadBooksFromFirestore(); // Recarregar livros após adicionar
             };
 
             if (cover) {
