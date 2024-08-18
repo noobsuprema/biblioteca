@@ -130,11 +130,15 @@
         .delete-button:hover {
             background-color: #c0392b;
         }
-        #loginForm {
+        #loginForm, #bookSection {
+            display: none;
+        }
+        #loginForm.active, #bookSection.active {
             display: block;
         }
-        #bookSection {
-            display: none;
+        #errorMessage {
+            color: red;
+            text-align: center;
         }
     </style>
 </head>
@@ -142,16 +146,17 @@
     <h1>Biblioteca Virtual</h1>
 
     <!-- Formulário de Login -->
-    <div id="loginForm">
+    <div id="loginForm" class="active">
         <form id="login">
             <input type="text" id="username" placeholder="Usuário" required>
             <input type="password" id="password" placeholder="Senha" required>
             <button type="submit">Login</button>
+            <div id="errorMessage"></div>
         </form>
     </div>
 
     <!-- Controles: Seletor de Ordenação e Botão -->
-    <div id="controls" style="display: none;">
+    <div id="controls">
         <select id="sortSelect">
             <option value="title">Ordenar A-Z</option>
             <option value="year">Ordenar por Ano</option>
@@ -182,22 +187,23 @@
             event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
 
             const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-            
+
             if (response.ok) {
                 const { token } = await response.json();
                 localStorage.setItem('token', token);
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('bookSection').style.display = 'block';
+                document.getElementById('loginForm').classList.remove('active');
+                document.getElementById('bookSection').classList.add('active');
                 document.getElementById('controls').style.display = 'flex';
                 loadBooks();
             } else {
-                alert('Credenciais inválidas');
+                errorMessage.textContent = 'Credenciais inválidas';
             }
         });
 
@@ -247,8 +253,7 @@
         function renderBooks(books) {
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
-
-            books.forEach((book, index) => {
+            books.forEach((book) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
