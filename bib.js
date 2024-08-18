@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const fields = document.querySelectorAll("input");
   const modal = document.querySelector("#myModal");
   const modalTitle = document.querySelector("#modalTitle");
-  const synopsis = document.querySelector("#synopsis");
   const txtSynopsis = document.querySelector("#txtSynopsis");
   const btnRegister = document.querySelector("#btnRegister");
   const btnSearch = document.querySelector("#btnSearch");
@@ -26,10 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showError(bookName) {
-    const contentModel = document.querySelector("#contentModel");
     modalTitle.innerHTML = `Livro "${bookName}" não encontrado!`;
     txtSynopsis.innerHTML = "";
-    contentModel.style.width = "50%";
     modal.style.display = "block";
   }
 
@@ -44,17 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function clearFields() {
-    fields.forEach(function (elem) {
-      elem.value = "";
-    });
-    synopsis.value = "";
+    fields.forEach(elem => elem.value = "");
+    document.querySelector("#synopsis").value = "";
   }
 
   function createCard(bookCard, bookName, bookAuthor, bookPublisher, numberOfPages, bookCover) {
     bookCard.className = bookName;
     bookCard.innerHTML = `
       <p id="bookTitle">${bookName}</p>
-      <img src="${bookCover}" alt="${bookName}"/>
+      <img src="${bookCover}" alt="${bookName}" style="max-width: 100px;"/>
       Autor: ${bookAuthor}
       <br>Editora: ${bookPublisher}
       <br>Páginas: ${numberOfPages}
@@ -64,11 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function appendElements(divSelect, bookCard) {
-    const btnCloseModal = document.querySelector("#btnCloseModal");
     divSelect.append(bookCard);
     divSelect.addEventListener("click", showSynopsis);
-    btnCloseModal.addEventListener("click", closeModal);
-    window.addEventListener("click", closeModalWindow);
   }
 
   function removeCard(parentDiv) {
@@ -79,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = findBook(bookName);
         if (index !== -1) {
           allBooks.splice(index, 1);
-          alert(`Livro "${bookName}" removido com sucesso!`);
           if (allBooks.length === 0) {
             emptyBookList.style.display = 'block';
           }
@@ -97,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookPublisher = document.querySelector("#bookPublisher").value;
     const numberOfPages = Number(document.querySelector("#numberOfPages").value);
     const bookCover = document.querySelector("#bookCover").value;
+    const synopsis = document.querySelector("#synopsis").value;
 
     allBooks.push({
       bookName,
@@ -104,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
       bookPublisher,
       numberOfPages,
       bookCover,
-      synopsis: synopsis.value
+      synopsis
     });
 
     emptyBookList.style.display = 'none';
@@ -125,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const foundBooks = document.querySelector("#foundBooks");
     foundBooks.innerHTML = '';
 
-    const findBook = allBooks.filter(elem => elem.bookName === bookNameSearch);
+    const filteredBooks = allBooks.filter(elem => elem.bookName === bookNameSearch);
 
-    if (findBook.length !== 0) {
-      findBook.forEach(elem => {
+    if (filteredBooks.length !== 0) {
+      filteredBooks.forEach(elem => {
         const bookCard = document.createElement("div");
         createCard(bookCard, elem.bookName, elem.bookAuthor, elem.bookPublisher, elem.numberOfPages, elem.bookCover);
         appendElements(foundBooks, bookCard);
@@ -137,12 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
       showError(bookNameSearch);
     }
 
-    const remove = removeCard(foundBooks);
-    foundBooks.addEventListener("click", remove);
-
     clearFields();
   }
 
   btnRegister.addEventListener("click", registerBook);
   btnSearch.addEventListener("click", searchBook);
+
+  // Eventos para fechar o modal
+  document.querySelector("#btnCloseModal").addEventListener("click", closeModal);
+  window.addEventListener("click", closeModalWindow);
 });
