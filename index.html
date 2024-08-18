@@ -59,19 +59,6 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        #searchBar {
-            flex: 1;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            font-size: 1em;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-        #searchBar:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-            outline: none;
-        }
         #sortButton {
             padding: 15px 20px;
             background-color: #2ecc71;
@@ -139,9 +126,8 @@
 <body>
     <h1>Biblioteca Virtual</h1>
 
-    <!-- Controles: Barra de Pesquisa e Botão de Ordenação -->
+    <!-- Controles: Botão de Ordenação -->
     <div id="controls">
-        <input type="text" id="searchBar" placeholder="Pesquisar livros...">
         <button id="sortButton">Ordenar A-Z</button>
     </div>
 
@@ -201,17 +187,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             let books = loadBooksFromLocalStorage();
             renderBooks(books);
-
-            // Função de pesquisa
-            document.getElementById('searchBar').addEventListener('input', function() {
-                const query = this.value.toLowerCase();
-                const filteredBooks = loadBooksFromLocalStorage().filter(book =>
-                    book.title.toLowerCase().includes(query) ||
-                    book.author.toLowerCase().includes(query) ||
-                    book.synopsis.toLowerCase().includes(query)
-                );
-                renderBooks(filteredBooks);
-            });
 
             // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
