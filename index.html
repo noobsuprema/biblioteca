@@ -59,10 +59,20 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        #controls input {
+        #searchBar {
             flex: 1;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-size: 1em;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
-        #controls button {
+        #searchBar:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
+        #sortButton {
             padding: 15px 20px;
             background-color: #2ecc71;
             border: none;
@@ -71,7 +81,7 @@
             font-weight: bold;
             transition: background-color 0.3s ease;
         }
-        #controls button:hover {
+        #sortButton:hover {
             background-color: #27ae60;
         }
         #bookList {
@@ -195,7 +205,7 @@
             // Função de pesquisa
             document.getElementById('searchBar').addEventListener('input', function() {
                 const query = this.value.toLowerCase();
-                const filteredBooks = books.filter(book =>
+                const filteredBooks = loadBooksFromLocalStorage().filter(book =>
                     book.title.toLowerCase().includes(query) ||
                     book.author.toLowerCase().includes(query) ||
                     book.synopsis.toLowerCase().includes(query)
@@ -205,6 +215,7 @@
 
             // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
+                books = loadBooksFromLocalStorage();
                 books.sort((a, b) => a.title.localeCompare(b.title));
                 saveBooksToLocalStorage(books);
                 renderBooks(books);
