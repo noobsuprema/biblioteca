@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual</title>
     <style>
+        /* Adicione seu estilo aqui conforme o exemplo anterior */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f9;
@@ -156,15 +157,40 @@
 
     <div id="bookList"></div>
 
+    <!-- Adicione os scripts do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
     <script>
-        // Função para salvar livros no localStorage
-        function saveBooksToLocalStorage(books) {
-            localStorage.setItem('books', JSON.stringify(books));
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Função para salvar livros no Firestore
+        function saveBooksToFirestore(book) {
+            db.collection('books').add(book)
+                .then(() => console.log('Livro adicionado com sucesso!'))
+                .catch(error => console.error('Erro ao adicionar livro:', error));
         }
 
-        // Função para carregar livros do localStorage
-        function loadBooksFromLocalStorage() {
-            return JSON.parse(localStorage.getItem('books')) || [];
+        // Função para carregar livros do Firestore
+        function loadBooksFromFirestore() {
+            db.collection('books').get()
+                .then(snapshot => {
+                    const books = [];
+                    snapshot.forEach(doc => books.push({ id: doc.id, ...doc.data() }));
+                    renderBooks(books);
+                })
+                .catch(error => console.error('Erro ao carregar livros:', error));
         }
 
         // Função para renderizar livros na tela
@@ -182,7 +208,7 @@
                     <p><strong>Ano:</strong> ${book.year}</p>
                     <p><strong>Páginas:</strong> ${book.pages}</p>
                     <p>${book.synopsis}</p>
-                    <button class="delete-button" data-index="${index}">×</button>
+                    <button class="delete-button" data-id="${book.id}">×</button>
                 `;
                 bookList.appendChild(bookDiv);
             });
@@ -190,34 +216,16 @@
             // Adicionar funcionalidade ao botão de exclusão
             document.querySelectorAll('.delete-button').forEach(button => {
                 button.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    books.splice(index, 1); // Remove o livro do array
-                    saveBooksToLocalStorage(books); // Salva o novo array no localStorage
-                    renderBooks(books); // Re-renderiza os livros na tela
+                    const id = this.getAttribute('data-id');
+                    db.collection('books').doc(id).delete()
+                        .then(() => {
+                            console.log('Livro excluído com sucesso!');
+                            loadBooksFromFirestore(); // Recarregar livros
+                        })
+                        .catch(error => console.error('Erro ao excluir livro:', error));
                 });
             });
         }
-
-        // Carregar livros ao iniciar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            let books = loadBooksFromLocalStorage();
-            renderBooks(books);
-
-            // Função de ordenação
-            document.getElementById('sortButton').addEventListener('click', function() {
-                const sortOption = document.getElementById('sortSelect').value;
-                books = loadBooksFromLocalStorage();
-                
-                if (sortOption === 'title') {
-                    books.sort((a, b) => a.title.localeCompare(b.title));
-                } else if (sortOption === 'year') {
-                    books.sort((a, b) => a.year - b.year);
-                }
-                
-                saveBooksToLocalStorage(books);
-                renderBooks(books);
-            });
-        });
 
         // Manipular o formulário de cadastro
         document.getElementById('bookForm').addEventListener('submit', function(event) {
@@ -232,8 +240,6 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                let books = loadBooksFromLocalStorage();
-
                 const newBook = {
                     title,
                     author,
@@ -243,9 +249,7 @@
                     cover: e.target.result
                 };
 
-                books.push(newBook); // Adiciona o novo livro ao array
-                saveBooksToLocalStorage(books); // Salva o array no localStorage
-                renderBooks(books); // Re-renderiza os livros na tela
+                saveBooksToFirestore(newBook); // Salvar livro no Firestore
 
                 // Limpa o formulário após o cadastro
                 document.getElementById('bookForm').reset();
@@ -254,6 +258,23 @@
             if (cover) {
                 reader.readAsDataURL(cover);
             }
+        });
+
+        // Manipular a ordenação
+        document.getElementById('sortButton').addEventListener('click', function() {
+            const sortOption = document.getElementById('sortSelect').value;
+            db.collection('books').orderBy(sortOption).get()
+                .then(snapshot => {
+                    const books = [];
+                    snapshot.forEach(doc => books.push({ id: doc.id, ...doc.data() }));
+                    renderBooks(books);
+                })
+                .catch(error => console.error('Erro ao ordenar livros:', error));
+        });
+
+        // Carregar livros ao iniciar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooksFromFirestore();
         });
     </script>
 </body>
