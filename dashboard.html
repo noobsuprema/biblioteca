@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual - Dashboard</title>
     <style>
-        /* Estilos semelhantes ao arquivo anterior */
+        /* Estilos para o Dashboard */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f9;
@@ -16,7 +16,6 @@
         }
         h1 {
             text-align: center;
-            font-size: 2.5em;
             margin: 30px 0;
             color: #2c3e50;
         }
@@ -37,7 +36,6 @@
             border: 1px solid #ddd;
             font-size: 1em;
             width: 100%;
-            box-sizing: border-box;
         }
         input:focus, textarea:focus, select:focus {
             border-color: #3498db;
@@ -204,6 +202,12 @@
 
         // Carregar livros ao iniciar a página
         document.addEventListener('DOMContentLoaded', function() {
+            // Verifica se o usuário está logado
+            if (localStorage.getItem('loggedIn') !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
             let books = loadBooksFromLocalStorage();
             renderBooks(books);
 
