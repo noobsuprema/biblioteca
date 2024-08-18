@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteca Virtual</title>
     <style>
+        /* Adicione seu estilo aqui conforme o exemplo anterior */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f9;
@@ -88,10 +89,10 @@
         }
         .book {
             background-color: #ffffff;
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 200px;
+            max-width: 250px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -99,34 +100,33 @@
             max-width: 100%;
             height: auto;
             border-radius: 5px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .book:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         .book h2 {
-            font-size: 1em;
+            font-size: 1.1em;
             color: #2c3e50;
-            margin: 10px 0;
+            margin-bottom: 10px;
         }
         .book p {
-            font-size: 0.8em;
+            font-size: 0.9em;
             color: #555;
             margin: 5px 0;
         }
         .delete-button {
             position: absolute;
-            top: 5px;
-            right: 5px;
+            top: 10px;
+            right: 10px;
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 5px;
+            padding: 8px;
             border-radius: 50%;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            font-size: 0.8em;
         }
         .delete-button:hover {
             background-color: #c0392b;
@@ -186,11 +186,6 @@
         function loadBooksFromFirestore() {
             db.collection('books').get()
                 .then(snapshot => {
-                    if (snapshot.empty) {
-                        console.log('Nenhum livro encontrado.');
-                        document.getElementById('bookList').innerHTML = '<p>Nenhum livro cadastrado.</p>';
-                        return;
-                    }
                     const books = [];
                     snapshot.forEach(doc => books.push({ id: doc.id, ...doc.data() }));
                     renderBooks(books);
@@ -203,7 +198,7 @@
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
 
-            books.forEach(book => {
+            books.forEach((book, index) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
@@ -258,7 +253,6 @@
 
                 // Limpa o formulário após o cadastro
                 document.getElementById('bookForm').reset();
-                loadBooksFromFirestore(); // Recarregar livros após adicionar
             };
 
             if (cover) {
