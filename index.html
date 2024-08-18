@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca Virtual</title>
+    <title>Biblioteca Virtual - Dashboard</title>
     <style>
+        /* Estilos semelhantes ao arquivo anterior */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f9;
@@ -36,6 +37,7 @@
             border: 1px solid #ddd;
             font-size: 1em;
             width: 100%;
+            box-sizing: border-box;
         }
         input:focus, textarea:focus, select:focus {
             border-color: #3498db;
@@ -91,7 +93,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 250px;
+            max-width: 200px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -122,38 +124,19 @@
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 8px;
+            padding: 6px;
             border-radius: 50%;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            font-size: 1em;
         }
         .delete-button:hover {
             background-color: #c0392b;
         }
-        #loginForm, #bookSection {
-            display: none;
-        }
-        #loginForm.active, #bookSection.active {
-            display: block;
-        }
-        #errorMessage {
-            color: red;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
-    <h1>Biblioteca Virtual</h1>
-
-    <!-- Formulário de Login -->
-    <div id="loginForm" class="active">
-        <form id="login">
-            <input type="text" id="username" placeholder="Usuário" required>
-            <input type="password" id="password" placeholder="Senha" required>
-            <button type="submit">Login</button>
-            <div id="errorMessage"></div>
-        </form>
-    </div>
+    <h1>Biblioteca Virtual - Dashboard</h1>
 
     <!-- Controles: Seletor de Ordenação e Botão -->
     <div id="controls">
@@ -164,96 +147,35 @@
         <button id="sortButton">Aplicar Ordenação</button>
     </div>
 
-    <!-- Formulário de Cadastro de Livro -->
-    <div id="bookSection">
-        <form id="bookForm">
-            <input type="text" id="title" placeholder="Título" required>
-            <input type="text" id="author" placeholder="Autor" required>
-            <input type="number" id="year" placeholder="Ano de Publicação" required>
-            <input type="number" id="pages" placeholder="Quantidade de Páginas" required>
-            <textarea id="synopsis" placeholder="Sinopse" required></textarea>
-            <input type="file" id="cover" accept="image/*" required>
-            <button type="submit">Cadastrar Livro</button>
-        </form>
+    <form id="bookForm">
+        <input type="text" id="title" placeholder="Título" required>
+        <input type="text" id="author" placeholder="Autor" required>
+        <input type="number" id="year" placeholder="Ano de Publicação" required>
+        <input type="number" id="pages" placeholder="Quantidade de Páginas" required>
+        <textarea id="synopsis" placeholder="Sinopse" required></textarea>
+        <input type="file" id="cover" accept="image/*" required>
+        <button type="submit">Cadastrar Livro</button>
+    </form>
 
-        <div id="bookList"></div>
-    </div>
+    <div id="bookList"></div>
 
     <script>
-        const API_URL = 'http://localhost:3000'; // Substitua pela URL do seu servidor
-
-        // Função para fazer login
-        document.getElementById('login').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-
-            const response = await fetch(`${API_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (response.ok) {
-                const { token } = await response.json();
-                localStorage.setItem('token', token);
-                document.getElementById('loginForm').classList.remove('active');
-                document.getElementById('bookSection').classList.add('active');
-                document.getElementById('controls').style.display = 'flex';
-                loadBooks();
-            } else {
-                errorMessage.textContent = 'Credenciais inválidas';
-            }
-        });
-
-        // Função para salvar livro
-        document.getElementById('bookForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const title = document.getElementById('title').value;
-            const author = document.getElementById('author').value;
-            const year = document.getElementById('year').value;
-            const pages = document.getElementById('pages').value;
-            const synopsis = document.getElementById('synopsis').value;
-            const cover = document.getElementById('cover').files[0];
-            
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const token = localStorage.getItem('token');
-                await fetch(`${API_URL}/books`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        title, author, year, pages, synopsis, cover: e.target.result
-                    })
-                });
-                loadBooks();
-                document.getElementById('bookForm').reset();
-            };
-            
-            if (cover) {
-                reader.readAsDataURL(cover);
-            }
-        });
-
-        // Função para carregar livros
-        async function loadBooks() {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/books`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const books = await response.json();
-            renderBooks(books);
+        // Função para salvar livros no localStorage
+        function saveBooksToLocalStorage(books) {
+            localStorage.setItem('books', JSON.stringify(books));
         }
 
-        // Função para renderizar livros
+        // Função para carregar livros do localStorage
+        function loadBooksFromLocalStorage() {
+            return JSON.parse(localStorage.getItem('books')) || [];
+        }
+
+        // Função para renderizar livros na tela
         function renderBooks(books) {
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
-            books.forEach((book) => {
+
+            books.forEach((book, index) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
@@ -263,41 +185,79 @@
                     <p><strong>Ano:</strong> ${book.year}</p>
                     <p><strong>Páginas:</strong> ${book.pages}</p>
                     <p>${book.synopsis}</p>
-                    <button class="delete-button" data-id="${book._id}">×</button>
+                    <button class="delete-button" data-index="${index}">×</button>
                 `;
                 bookList.appendChild(bookDiv);
             });
 
             // Adicionar funcionalidade ao botão de exclusão
             document.querySelectorAll('.delete-button').forEach(button => {
-                button.addEventListener('click', async function() {
-                    const bookId = this.getAttribute('data-id');
-                    const token = localStorage.getItem('token');
-                    await fetch(`${API_URL}/books/${bookId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    loadBooks();
+                button.addEventListener('click', function() {
+                    const index = this.getAttribute('data-index');
+                    let books = loadBooksFromLocalStorage();
+                    books.splice(index, 1); // Remove o livro do array
+                    saveBooksToLocalStorage(books); // Salva o novo array no localStorage
+                    renderBooks(books); // Re-renderiza os livros na tela
                 });
             });
         }
 
-        // Função de ordenação
-        document.getElementById('sortButton').addEventListener('click', async function() {
-            const sortOption = document.getElementById('sortSelect').value;
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/books`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            let books = await response.json();
-            
-            if (sortOption === 'title') {
-                books.sort((a, b) => a.title.localeCompare(b.title));
-            } else if (sortOption === 'year') {
-                books.sort((a, b) => a.year - b.year);
-            }
-            
+        // Carregar livros ao iniciar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            let books = loadBooksFromLocalStorage();
             renderBooks(books);
+
+            // Função de ordenação
+            document.getElementById('sortButton').addEventListener('click', function() {
+                const sortOption = document.getElementById('sortSelect').value;
+                let books = loadBooksFromLocalStorage();
+                
+                if (sortOption === 'title') {
+                    books.sort((a, b) => a.title.localeCompare(b.title));
+                } else if (sortOption === 'year') {
+                    books.sort((a, b) => a.year - b.year);
+                }
+                
+                saveBooksToLocalStorage(books);
+                renderBooks(books);
+            });
+        });
+
+        // Manipular o formulário de cadastro
+        document.getElementById('bookForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const year = document.getElementById('year').value;
+            const pages = document.getElementById('pages').value;
+            const synopsis = document.getElementById('synopsis').value;
+            const cover = document.getElementById('cover').files[0];
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let books = loadBooksFromLocalStorage();
+
+                const newBook = {
+                    title,
+                    author,
+                    year: parseInt(year),
+                    pages: parseInt(pages),
+                    synopsis,
+                    cover: e.target.result
+                };
+
+                books.push(newBook); // Adiciona o novo livro ao array
+                saveBooksToLocalStorage(books); // Salva o array no localStorage
+                renderBooks(books); // Re-renderiza os livros na tela
+
+                // Limpa o formulário após o cadastro
+                document.getElementById('bookForm').reset();
+            };
+
+            if (cover) {
+                reader.readAsDataURL(cover);
+            }
         });
     </script>
 </body>
