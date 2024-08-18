@@ -191,6 +191,7 @@
             document.querySelectorAll('.delete-button').forEach(button => {
                 button.addEventListener('click', function() {
                     const index = this.getAttribute('data-index');
+                    let books = loadBooksFromLocalStorage();
                     books.splice(index, 1); // Remove o livro do array
                     saveBooksToLocalStorage(books); // Salva o novo array no localStorage
                     renderBooks(books); // Re-renderiza os livros na tela
@@ -206,7 +207,7 @@
             // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
                 const sortOption = document.getElementById('sortSelect').value;
-                books = loadBooksFromLocalStorage();
+                let books = loadBooksFromLocalStorage();
                 
                 if (sortOption === 'title') {
                     books.sort((a, b) => a.title.localeCompare(b.title));
