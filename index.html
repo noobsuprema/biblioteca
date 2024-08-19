@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblioteca Virtual - Dashboard</title>
+    <title>Biblioteca Virtual</title>
     <style>
-        /* Estilos para o Dashboard */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f6f9;
@@ -16,6 +15,7 @@
         }
         h1 {
             text-align: center;
+            font-size: 2.5em;
             margin: 30px 0;
             color: #2c3e50;
         }
@@ -83,14 +83,14 @@
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .book {
             background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             max-width: 200px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -98,8 +98,8 @@
         .book img {
             max-width: 100%;
             height: auto;
-            border-radius: 5px;
-            margin-bottom: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
         }
         .book:hover {
             transform: translateY(-5px);
@@ -116,17 +116,28 @@
             margin: 5px 0;
         }
         .delete-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-size: 1em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8em; /* Diminui o tamanho da fonte */
+    width: 24px; /* Largura fixa para o botão */
+    height: 24px; /* Altura fixa para o botão */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+}
+
         }
         .delete-button:hover {
             background-color: #c0392b;
@@ -134,7 +145,7 @@
     </style>
 </head>
 <body>
-    <h1>Biblioteca Virtual - Dashboard</h1>
+    <h1>Biblioteca Virtual</h1>
 
     <!-- Controles: Seletor de Ordenação e Botão -->
     <div id="controls">
@@ -202,12 +213,6 @@
 
         // Carregar livros ao iniciar a página
         document.addEventListener('DOMContentLoaded', function() {
-            // Verifica se o usuário está logado
-            if (localStorage.getItem('loggedIn') !== 'true') {
-                window.location.href = 'login.html';
-                return;
-            }
-            
             let books = loadBooksFromLocalStorage();
             renderBooks(books);
 
@@ -266,4 +271,3 @@
     </script>
 </body>
 </html>
-
