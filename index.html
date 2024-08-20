@@ -198,17 +198,13 @@
         };
 
         // Inicialize o Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(app);
 
-        // Referência ao banco de dados
-        const database = firebase.database();
-
-        // Função para salvar livros no Firebase e recarregar a lista
+        // Função para salvar livros no Firebase
         function saveBookToFirebase(book) {
             const booksRef = database.ref('books');
-            booksRef.push(book).then(() => {
-                loadBooksFromFirebase(); // Recarrega os livros após salvar
-            });
+            return booksRef.push(book);
         }
 
         // Função para carregar livros do Firebase
@@ -223,7 +219,9 @@
         // Função para deletar um livro no Firebase
         function deleteBookFromFirebase(bookId) {
             const bookRef = database.ref('books/' + bookId);
-            bookRef.remove();
+            bookRef.remove().then(() => {
+                loadBooksFromFirebase(); // Recarregar os livros após exclusão
+            });
         }
 
         // Função para renderizar livros na tela
@@ -255,19 +253,17 @@
             });
         }
 
-        // Carregar livros ao iniciar a página
+        // Função de inicialização
         document.addEventListener('DOMContentLoaded', function() {
             loadBooksFromFirebase();
 
-            // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
                 const sortOption = document.getElementById('sortSelect').value;
-                let books = [];
-
                 const booksRef = database.ref('books');
+
                 booksRef.once('value', (snapshot) => {
                     const booksObj = snapshot.val();
-                    books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
+                    let books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
 
                     if (sortOption === 'title') {
                         books.sort((a, b) => a.title.localeCompare(b.title));
@@ -302,9 +298,10 @@
                     cover: e.target.result
                 };
 
-                saveBookToFirebase(newBook); // Salva o livro no Firebase
-
-                document.getElementById('bookForm').reset();
+                saveBookToFirebase(newBook).then(() => {
+                    document.getElementById('bookForm').reset();
+                    loadBooksFromFirebase(); // Recarregar a lista após salvar o livro
+                });
             };
 
             if (cover) {
