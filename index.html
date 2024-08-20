@@ -204,7 +204,13 @@
         // Função para salvar livros no Firebase
         function saveBookToFirebase(book) {
             const booksRef = database.ref('books');
-            return booksRef.push(book);
+            return booksRef.push(book)
+                .then(() => {
+                    console.log("Livro salvo com sucesso!");
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar livro:", error);
+                });
         }
 
         // Função para carregar livros do Firebase
@@ -231,6 +237,7 @@
         function deleteBookFromFirebase(bookId) {
             const bookRef = database.ref('books/' + bookId);
             bookRef.remove().then(() => {
+                console.log("Livro removido com sucesso!");
                 loadBooksFromFirebase(); // Recarregar os livros após exclusão
             }).catch((error) => {
                 console.error("Erro ao deletar livro:", error);
@@ -321,6 +328,23 @@
 
             if (cover) {
                 reader.readAsDataURL(cover);
+            } else {
+                // Se não houver uma capa, ainda tente salvar o livro
+                const newBook = {
+                    title,
+                    author,
+                    year: parseInt(year),
+                    pages: parseInt(pages),
+                    synopsis,
+                    cover: '' // Sem capa
+                };
+
+                saveBookToFirebase(newBook).then(() => {
+                    document.getElementById('bookForm').reset();
+                    loadBooksFromFirebase(); // Recarregar a lista após salvar o livro
+                }).catch((error) => {
+                    console.error("Erro ao salvar livro:", error);
+                });
             }
         });
     </script>
