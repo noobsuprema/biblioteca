@@ -214,7 +214,7 @@
             const booksRef = database.ref('books');
             booksRef.on('value', (snapshot) => {
                 const books = snapshot.val();
-                renderBooks(books ? Object.values(books) : []);
+                renderBooks(books ? Object.entries(books).map(([id, book]) => ({ ...book, id })) : []);
             });
         }
 
@@ -229,7 +229,7 @@
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
 
-            books.forEach((book, index) => {
+            books.forEach((book) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
@@ -239,7 +239,7 @@
                     <p><strong>Ano:</strong> ${book.year}</p>
                     <p><strong>Páginas:</strong> ${book.pages}</p>
                     <p>${book.synopsis}</p>
-                    <button class="delete-button" data-id="${index}">×</button>
+                    <button class="delete-button" data-id="${book.id}">×</button>
                 `;
                 bookList.appendChild(bookDiv);
             });
@@ -260,15 +260,21 @@
             // Função de ordenação
             document.getElementById('sortButton').addEventListener('click', function() {
                 const sortOption = document.getElementById('sortSelect').value;
-                let books = loadBooksFromFirebase();
-                
-                if (sortOption === 'title') {
-                    books.sort((a, b) => a.title.localeCompare(b.title));
-                } else if (sortOption === 'year') {
-                    books.sort((a, b) => a.year - b.year);
-                }
+                let books = [];
 
-                renderBooks(books);
+                const booksRef = database.ref('books');
+                booksRef.once('value', (snapshot) => {
+                    books = snapshot.val();
+                    books = books ? Object.entries(books).map(([id, book]) => ({ ...book, id })) : [];
+
+                    if (sortOption === 'title') {
+                        books.sort((a, b) => a.title.localeCompare(b.title));
+                    } else if (sortOption === 'year') {
+                        books.sort((a, b) => a.year - b.year);
+                    }
+
+                    renderBooks(books);
+                });
             });
         });
 
