@@ -185,6 +185,9 @@
      <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
+        
+        console.log("Iniciando aplicação...");
+        
         // Configuração do Firebase (substitua pelos seus dados do Firebase)
         const firebaseConfig = {
   apiKey: "AIzaSyCDVKC1L-9pnPuF5m8xex-sLKUUXOTdn14",
@@ -198,9 +201,11 @@
         };
 
         // Inicialize o Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
+        console.log("Firebase inicializado.");
+        
         // Função para salvar livros no Firebase
         function saveBookToFirebase(book) {
             const booksRef = database.ref('books');
@@ -209,10 +214,21 @@
 
         // Função para carregar livros do Firebase
         function loadBooksFromFirebase() {
+            console.log("Carregando livros do Firebase...");
+
             const booksRef = database.ref('books');
             booksRef.on('value', (snapshot) => {
                 const books = snapshot.val();
-                renderBooks(books ? Object.entries(books).map(([id, book]) => ({ ...book, id })) : []);
+                console.log("Dados recebidos do Firebase:", books);
+
+                const bookList = document.getElementById('bookList');
+                if (books) {
+                    bookList.innerHTML = JSON.stringify(books, null, 2);
+                } else {
+                    bookList.innerHTML = "Nenhum livro encontrado.";
+                }
+            }, (error) => {
+                console.error("Erro ao carregar livros do Firebase:", error);
             });
         }
 
