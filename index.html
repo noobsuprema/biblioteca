@@ -68,7 +68,7 @@
             gap: 15px;
         }
 
-        #sortSelect, #genreSelect, #searchInput {
+        #sortSelect {
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -76,7 +76,7 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        #sortButton, #filterButton {
+        #sortButton {
             padding: 15px 20px;
             background-color: #2ecc71;
             border: none;
@@ -86,7 +86,7 @@
             transition: background-color 0.3s ease;
         }
 
-        #sortButton:hover, #filterButton:hover {
+        #sortButton:hover {
             background-color: #27ae60;
         }
 
@@ -133,7 +133,7 @@
             margin: 5px 0;
         }
 
-        .delete-button {
+  .delete-button {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -144,48 +144,68 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 0.8em;
-            width: 25px;
-            height: 25px;
+            width: 24px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
+            transition: background-color 0.3s ease;
+        }      
 
         .delete-button:hover {
             background-color: #c0392b;
         }
-
-        @media (max-width: 768px) {
-            form {
-                padding: 15px;
-            }
-
-            .book {
-                max-width: 100%;
-                margin: 10px 0;
-            }
-        }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/9.8.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.8.0/firebase-database.js"></script>
+</head>
+<body>
+    <h1>Biblioteca Virtual</h1>
+
+    <!-- Controles: Seletor de Ordenação e Botão -->
+    <div id="controls">
+        <select id="sortSelect">
+            <option value="title">Ordenar A-Z</option>
+            <option value="year">Ordenar por Ano</option>
+        </select>
+        <button id="sortButton">Aplicar Ordenação</button>
+    </div>
+
+    <form id="bookForm">
+        <input type="text" id="title" placeholder="Título" required>
+        <input type="text" id="author" placeholder="Autor" required>
+        <input type="number" id="year" placeholder="Ano de Publicação" required>
+        <input type="number" id="pages" placeholder="Quantidade de Páginas" required>
+        <textarea id="synopsis" placeholder="Sinopse" required></textarea>
+        <input type="file" id="cover" accept="image/*" required>
+        <button type="submit">Cadastrar Livro</button>
+    </form>
+
+    <div id="bookList"></div>
+
+    <!-- Adicionando os scripts do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script>
-        // Configuração do Firebase
+        console.log("Iniciando aplicação...");
+
+        // Configuração do Firebase (substitua pelos seus dados do Firebase)
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            databaseURL: "SUA_DATABASE_URL",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID",
-            measurementId: "SEU_MEASUREMENT_ID"
+            apiKey: "AIzaSyCDVKC1L-9pnPuF5m8xex-sLKUUXOTdn14",
+            authDomain: "bibliotecavirtual-873e9.firebaseapp.com",
+            databaseURL: "https://bibliotecavirtual-873e9-default-rtdb.firebaseio.com",
+            projectId: "bibliotecavirtual-873e9",
+            storageBucket: "bibliotecavirtual-873e9.appspot.com",
+            messagingSenderId: "1081791363834",
+            appId: "1:1081791363834:web:122821108a8b053dc8a743",
+            measurementId: "G-13BGS2G637"
         };
 
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Função para salvar livro no Firebase
+        console.log("Firebase inicializado.");
+
+        // Função para salvar livros no Firebase
         function saveBookToFirebase(book) {
             const booksRef = database.ref('books');
             return booksRef.push(book)
@@ -199,24 +219,30 @@
 
         // Função para carregar livros do Firebase
         function loadBooksFromFirebase() {
+            console.log("Carregando livros do Firebase...");
+
             const booksRef = database.ref('books');
+            booksRef.on('value', (snapshot) => {
+                const books = snapshot.val();
+                console.log("Dados recebidos do Firebase:", books);
 
-            booksRef.once('value', (snapshot) => {
-                const booksObj = snapshot.val();
-                const books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
-
-                renderBooks(books);
-            }).catch((error) => {
-                console.error("Erro ao carregar livros:", error);
+                if (books) {
+                    const booksArray = Object.entries(books).map(([id, book]) => ({ ...book, id }));
+                    renderBooks(booksArray);
+                } else {
+                    document.getElementById('bookList').innerHTML = "Nenhum livro encontrado.";
+                }
+            }, (error) => {
+                console.error("Erro ao carregar livros do Firebase:", error);
             });
         }
 
-        // Função para excluir um livro do Firebase
+        // Função para deletar um livro no Firebase
         function deleteBookFromFirebase(bookId) {
-            const bookRef = database.ref(`books/${bookId}`);
+            const bookRef = database.ref('books/' + bookId);
             bookRef.remove().then(() => {
-                console.log("Livro excluído com sucesso!");
-                loadBooksFromFirebase(); // Recarregar a lista após exclusão
+                console.log("Livro removido com sucesso!");
+                loadBooksFromFirebase(); // Recarregar os livros após exclusão
             }).catch((error) => {
                 console.error("Erro ao deletar livro:", error);
             });
@@ -224,27 +250,18 @@
 
         // Função para renderizar livros na tela
         function renderBooks(books) {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const selectedGenre = document.getElementById('genreSelect').value;
-
-            const filteredBooks = books.filter(book => {
-                return (!selectedGenre || book.genre === selectedGenre) &&
-                       (!searchTerm || book.title.toLowerCase().includes(searchTerm));
-            });
-
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
 
-            filteredBooks.forEach((book) => {
+            books.forEach((book) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
-                    <img src="${book.cover || 'default-cover.png'}" alt="${book.title}">
+                    <img src="${book.cover}" alt="${book.title}">
                     <h2>${book.title}</h2>
                     <p><strong>Autor:</strong> ${book.author}</p>
                     <p><strong>Ano:</strong> ${book.year}</p>
                     <p><strong>Páginas:</strong> ${book.pages}</p>
-                    <p><strong>Gênero:</strong> ${book.genre}</p>
                     <p>${book.synopsis}</p>
                     <button class="delete-button" data-id="${book.id}">×</button>
                 `;
@@ -281,14 +298,6 @@
                     renderBooks(books);
                 });
             });
-
-            document.getElementById('filterButton').addEventListener('click', function() {
-                loadBooksFromFirebase(); // Recarregar a lista para aplicar o filtro
-            });
-
-            document.getElementById('searchInput').addEventListener('input', function() {
-                loadBooksFromFirebase(); // Recarregar a lista ao buscar
-            });
         });
 
         // Função para cadastrar novo livro
@@ -299,7 +308,6 @@
             const author = document.getElementById('author').value;
             const year = document.getElementById('year').value;
             const pages = document.getElementById('pages').value;
-            const genre = document.getElementById('genre').value;
             const synopsis = document.getElementById('synopsis').value;
             const cover = document.getElementById('cover').files[0];
 
@@ -310,7 +318,6 @@
                     author,
                     year: parseInt(year),
                     pages: parseInt(pages),
-                    genre,
                     synopsis,
                     cover: e.target.result
                 };
@@ -332,7 +339,6 @@
                     author,
                     year: parseInt(year),
                     pages: parseInt(pages),
-                    genre,
                     synopsis,
                     cover: '' // Sem capa
                 };
@@ -346,46 +352,5 @@
             }
         });
     </script>
-</head>
-<body>
-    <h1>Biblioteca Virtual</h1>
-
-    <form id="bookForm">
-        <input type="text" id="title" placeholder="Título do Livro" required>
-        <input type="text" id="author" placeholder="Autor" required>
-        <input type="number" id="year" placeholder="Ano de Publicação" required>
-        <input type="number" id="pages" placeholder="Número de Páginas" required>
-        <select id="genre" required>
-            <option value="">Selecione o Gênero</option>
-            <option value="Ficção">Ficção</option>
-            <option value="Não-Ficção">Não-Ficção</option>
-            <option value="Aventura">Aventura</option>
-            <option value="Romance">Romance</option>
-            <!-- Adicione outros gêneros conforme necessário -->
-        </select>
-        <textarea id="synopsis" placeholder="Sinopse" required></textarea>
-        <input type="file" id="cover" accept="image/*">
-        <button type="submit">Adicionar Livro</button>
-    </form>
-
-    <div id="controls">
-        <select id="sortSelect">
-            <option value="title">Ordenar por Título</option>
-            <option value="year">Ordenar por Ano</option>
-        </select>
-        <button id="sortButton">Ordenar</button>
-        <input type="text" id="searchInput" placeholder="Buscar por título">
-        <select id="genreSelect">
-            <option value="">Todos os Gêneros</option>
-            <option value="Ficção">Ficção</option>
-            <option value="Não-Ficção">Não-Ficção</option>
-            <option value="Aventura">Aventura</option>
-            <option value="Romance">Romance</option>
-            <!-- Adicione outros gêneros conforme necessário -->
-        </select>
-        <button id="filterButton">Filtrar</button>
-    </div>
-
-    <div id="bookList"></div>
 </body>
 </html>
