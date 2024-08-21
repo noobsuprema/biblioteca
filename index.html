@@ -8,7 +8,7 @@
         /* Estilos para o layout */
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f6f9;
+            background-color: #e9eff1;
             color: #333;
             margin: 0;
             padding: 0;
@@ -17,35 +17,37 @@
 
         h1 {
             text-align: center;
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin: 30px 0;
             color: #2c3e50;
+            font-weight: 700;
         }
 
         form {
             background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 700px;
-            margin: 0 auto 30px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         input, textarea, select, button {
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             border: 1px solid #ddd;
             font-size: 1em;
             width: 100%;
+            box-sizing: border-box;
         }
 
         input:focus, textarea:focus, select:focus {
             border-color: #3498db;
             outline: none;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 0 6px rgba(52, 152, 219, 0.2);
         }
 
         button {
@@ -54,40 +56,32 @@
             cursor: pointer;
             border: none;
             font-weight: bold;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         button:hover {
             background-color: #2980b9;
+            transform: translateY(-2px);
         }
 
         #controls {
-            margin-bottom: 30px;
+            margin: 20px auto;
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
+            max-width: 800px;
         }
 
-        #sortSelect, #genreSelect, #searchInput {
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        #searchInput, #genreSelect, #sortSelect {
+            flex: 1 1 auto;
+            max-width: 200px;
         }
 
         #sortButton, #filterButton {
+            flex: 1 1 auto;
+            max-width: 180px;
             padding: 15px 20px;
-            background-color: #2ecc71;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-
-        #sortButton:hover, #filterButton:hover {
-            background-color: #27ae60;
         }
 
         #bookList {
@@ -101,10 +95,10 @@
 
         .book {
             background-color: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 240px;
             position: relative;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
@@ -112,23 +106,24 @@
         .book img {
             max-width: 100%;
             height: auto;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 10px;
         }
 
         .book:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
 
         .book h2 {
-            font-size: 1.1em;
+            font-size: 1.2em;
             color: #2c3e50;
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .book p {
-            font-size: 0.9em;
+            font-size: 0.95em;
             color: #555;
             margin: 5px 0;
         }
@@ -140,20 +135,43 @@
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 5px;
+            padding: 6px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 0.8em;
-            width: 24px;
-            height: 24px;
+            font-size: 0.9em;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }      
 
         .delete-button:hover {
             background-color: #c0392b;
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 600px) {
+            #controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #searchInput, #genreSelect, #sortSelect, #sortButton, #filterButton {
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+
+            #bookList {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .book {
+                max-width: 100%;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -235,6 +253,8 @@
         }
 
         // Função para carregar livros do Firebase
+        function
+        // Função para carregar livros do Firebase
         function loadBooksFromFirebase() {
             const booksRef = database.ref('books');
 
@@ -242,7 +262,6 @@
                 const booksObj = snapshot.val();
                 const books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
 
-                populateGenres(books);
                 renderBooks(books);
             }).catch((error) => {
                 console.error("Erro ao carregar livros:", error);
@@ -298,11 +317,6 @@
             });
         }
 
-        // Função para popular os gêneros disponíveis
-        function populateGenres(books) {
-            // O seletor de gênero já está preenchido com todas as opções fixas, então não precisa modificar aqui.
-        }
-
         // Função de inicialização
         document.addEventListener('DOMContentLoaded', function() {
             loadBooksFromFirebase();
@@ -326,25 +340,11 @@
             });
 
             document.getElementById('filterButton').addEventListener('click', function() {
-                const booksRef = database.ref('books');
-
-                booksRef.once('value', (snapshot) => {
-                    const booksObj = snapshot.val();
-                    let books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
-
-                    renderBooks(books);
-                });
+                loadBooksFromFirebase(); // Recarregar a lista para aplicar o filtro
             });
 
             document.getElementById('searchInput').addEventListener('input', function() {
-                const booksRef = database.ref('books');
-
-                booksRef.once('value', (snapshot) => {
-                    const booksObj = snapshot.val();
-                    let books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
-
-                    renderBooks(books);
-                });
+                loadBooksFromFirebase(); // Recarregar a lista ao buscar
             });
         });
 
