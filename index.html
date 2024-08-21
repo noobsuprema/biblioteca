@@ -165,6 +165,17 @@
         <input type="text" id="searchInput" placeholder="Buscar por título...">
         <select id="genreSelect">
             <option value="">Todos os Gêneros</option>
+            <option value="ação/aventura">Ação/Aventura</option>
+            <option value="romance">Romance</option>
+            <option value="ficção cientifica">Ficção Científica</option>
+            <option value="fantasia">Fantasia</option>
+            <option value="poemas/poesias">Poemas/Poesias</option>
+            <option value="terror/suspense">Terror/Suspense</option>
+            <option value="mangas">Mangás</option>
+            <option value="memórias/biografias">Memórias/Biografias</option>
+            <option value="arte/fotografia">Arte/Fotografia</option>
+            <option value="auto ajuda">Autoajuda</option>
+            <option value="outros">Outros</option>
         </select>
         <select id="sortSelect">
             <option value="title">Ordenar A-Z</option>
@@ -225,31 +236,25 @@
 
         // Função para carregar livros do Firebase
         function loadBooksFromFirebase() {
-            console.log("Carregando livros do Firebase...");
-
             const booksRef = database.ref('books');
-            booksRef.on('value', (snapshot) => {
-                const books = snapshot.val();
-                console.log("Dados recebidos do Firebase:", books);
 
-                if (books) {
-                    const booksArray = Object.entries(books).map(([id, book]) => ({ ...book, id }));
-                    populateGenres(booksArray); // Popula os gêneros disponíveis
-                    renderBooks(booksArray);
-                } else {
-                    document.getElementById('bookList').innerHTML = "Nenhum livro encontrado.";
-                }
-            }, (error) => {
-                console.error("Erro ao carregar livros do Firebase:", error);
+            booksRef.once('value', (snapshot) => {
+                const booksObj = snapshot.val();
+                const books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
+
+                populateGenres(books);
+                renderBooks(books);
+            }).catch((error) => {
+                console.error("Erro ao carregar livros:", error);
             });
         }
 
-        // Função para deletar um livro no Firebase
+        // Função para excluir um livro do Firebase
         function deleteBookFromFirebase(bookId) {
-            const bookRef = database.ref('books/' + bookId);
+            const bookRef = database.ref(`books/${bookId}`);
             bookRef.remove().then(() => {
-                console.log("Livro removido com sucesso!");
-                loadBooksFromFirebase(); // Recarregar os livros após exclusão
+                console.log("Livro excluído com sucesso!");
+                loadBooksFromFirebase(); // Recarregar a lista após exclusão
             }).catch((error) => {
                 console.error("Erro ao deletar livro:", error);
             });
@@ -295,16 +300,7 @@
 
         // Função para popular os gêneros disponíveis
         function populateGenres(books) {
-            const genreSelect = document.getElementById('genreSelect');
-            const genres = new Set(books.map(book => book.genre).filter(Boolean));
-
-            genreSelect.innerHTML = '<option value="">Todos os Gêneros</option>';
-            genres.forEach(genre => {
-                const option = document.createElement('option');
-                option.value = genre;
-                option.textContent = genre;
-                genreSelect.appendChild(option);
-            });
+            // O seletor de gênero já está preenchido com todas as opções fixas, então não precisa modificar aqui.
         }
 
         // Função de inicialização
