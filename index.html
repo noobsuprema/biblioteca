@@ -68,7 +68,7 @@
             gap: 15px;
         }
 
-        #sortSelect {
+        #sortSelect, #genreSelect, #searchInput {
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -76,7 +76,7 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        #sortButton {
+        #sortButton, #filterButton {
             padding: 15px 20px;
             background-color: #2ecc71;
             border: none;
@@ -86,7 +86,7 @@
             transition: background-color 0.3s ease;
         }
 
-        #sortButton:hover {
+        #sortButton:hover, #filterButton:hover {
             background-color: #27ae60;
         }
 
@@ -133,7 +133,7 @@
             margin: 5px 0;
         }
 
-  .delete-button {
+        .delete-button {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -160,13 +160,18 @@
 <body>
     <h1>Biblioteca Virtual</h1>
 
-    <!-- Controles: Seletor de Ordenação e Botão -->
+    <!-- Controles: Seletor de Gênero, Seletor de Ordenação e Barra de Busca -->
     <div id="controls">
+        <input type="text" id="searchInput" placeholder="Buscar por título...">
+        <select id="genreSelect">
+            <option value="">Todos os Gêneros</option>
+        </select>
         <select id="sortSelect">
             <option value="title">Ordenar A-Z</option>
             <option value="year">Ordenar por Ano</option>
         </select>
         <button id="sortButton">Aplicar Ordenação</button>
+        <button id="filterButton">Filtrar por Gênero</button>
     </div>
 
     <form id="bookForm">
@@ -174,8 +179,9 @@
         <input type="text" id="author" placeholder="Autor" required>
         <input type="number" id="year" placeholder="Ano de Publicação" required>
         <input type="number" id="pages" placeholder="Quantidade de Páginas" required>
+        <input type="text" id="genre" placeholder="Gênero" required>
         <textarea id="synopsis" placeholder="Sinopse" required></textarea>
-        <input type="file" id="cover" accept="image/*" required>
+        <input type="file" id="cover" accept="image/*">
         <button type="submit">Cadastrar Livro</button>
     </form>
 
@@ -228,6 +234,7 @@
 
                 if (books) {
                     const booksArray = Object.entries(books).map(([id, book]) => ({ ...book, id }));
+                    populateGenres(booksArray); // Popula os gêneros disponíveis
                     renderBooks(booksArray);
                 } else {
                     document.getElementById('bookList').innerHTML = "Nenhum livro encontrado.";
@@ -250,18 +257,27 @@
 
         // Função para renderizar livros na tela
         function renderBooks(books) {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedGenre = document.getElementById('genreSelect').value;
+
+            const filteredBooks = books.filter(book => {
+                return (!selectedGenre || book.genre === selectedGenre) &&
+                       (!searchTerm || book.title.toLowerCase().includes(searchTerm));
+            });
+
             const bookList = document.getElementById('bookList');
             bookList.innerHTML = '';
 
-            books.forEach((book) => {
+            filteredBooks.forEach((book) => {
                 const bookDiv = document.createElement('div');
                 bookDiv.classList.add('book');
                 bookDiv.innerHTML = `
-                    <img src="${book.cover}" alt="${book.title}">
+                    <img src="${book.cover || 'default-cover.png'}" alt="${book.title}">
                     <h2>${book.title}</h2>
                     <p><strong>Autor:</strong> ${book.author}</p>
                     <p><strong>Ano:</strong> ${book.year}</p>
                     <p><strong>Páginas:</strong> ${book.pages}</p>
+                    <p><strong>Gênero:</strong> ${book.genre}</p>
                     <p>${book.synopsis}</p>
                     <button class="delete-button" data-id="${book.id}">×</button>
                 `;
@@ -274,6 +290,20 @@
                     const bookId = this.getAttribute('data-id');
                     deleteBookFromFirebase(bookId);
                 });
+            });
+        }
+
+        // Função para popular os gêneros disponíveis
+        function populateGenres(books) {
+            const genreSelect = document.getElementById('genreSelect');
+            const genres = new Set(books.map(book => book.genre).filter(Boolean));
+
+            genreSelect.innerHTML = '<option value="">Todos os Gêneros</option>';
+            genres.forEach(genre => {
+                const option = document.createElement('option');
+                option.value = genre;
+                option.textContent = genre;
+                genreSelect.appendChild(option);
             });
         }
 
@@ -298,6 +328,28 @@
                     renderBooks(books);
                 });
             });
+
+            document.getElementById('filterButton').addEventListener('click', function() {
+                const booksRef = database.ref('books');
+
+                booksRef.once('value', (snapshot) => {
+                    const booksObj = snapshot.val();
+                    let books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
+
+                    renderBooks(books);
+                });
+            });
+
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const booksRef = database.ref('books');
+
+                booksRef.once('value', (snapshot) => {
+                    const booksObj = snapshot.val();
+                    let books = booksObj ? Object.entries(booksObj).map(([id, book]) => ({ ...book, id })) : [];
+
+                    renderBooks(books);
+                });
+            });
         });
 
         // Função para cadastrar novo livro
@@ -308,6 +360,7 @@
             const author = document.getElementById('author').value;
             const year = document.getElementById('year').value;
             const pages = document.getElementById('pages').value;
+            const genre = document.getElementById('genre').value;
             const synopsis = document.getElementById('synopsis').value;
             const cover = document.getElementById('cover').files[0];
 
@@ -318,6 +371,7 @@
                     author,
                     year: parseInt(year),
                     pages: parseInt(pages),
+                    genre,
                     synopsis,
                     cover: e.target.result
                 };
@@ -339,6 +393,7 @@
                     author,
                     year: parseInt(year),
                     pages: parseInt(pages),
+                    genre,
                     synopsis,
                     cover: '' // Sem capa
                 };
